@@ -49,7 +49,7 @@ class UI {
                 class="product-img">
                 <button class="bag-btn"data-id=${product.id}>
                     <i class="fas fa-shopping-cart"></i>
-                    add to bag
+                    add to cart
                 </button>
             </div>
             <h3>${product.title}</h3>
@@ -115,7 +115,6 @@ class UI {
         </div>
         `;
         cartContent.appendChild(div);
-        console.log(cartContent)
     }
 
     showCart() {
@@ -144,6 +143,37 @@ class UI {
         //clear cart button
         clearCartBtn.addEventListener('click', () => {
             this.clearCart();
+        });
+        // cart functionality
+        cartContent.addEventListener('click', (event) => {
+            if (event.target.classList.contains('remove-item')) {
+                let removeItem = event.target;
+                let id = removeItem.dataset.id;
+                cartContent.removeChild(removeItem.parentElement.parentElement)
+                this.removeItem(id);
+            } else if (event.target.classList.contains('fa-chevron-up')) {
+                let addAmount = event.target;
+                let id = addAmount.dataset.id;
+                let tempItem = cart.find(item => item.id === id);
+                tempItem.amount = tempItem.amount + 1;
+                Storage.saveCart(cart);
+                this.setCartValues(cart);
+                addAmount.nextElementSibling.innerHTML = 
+                tempItem.amount;
+            } else if (event.target.classList.contains('fa-chevron-down')) {
+                let reduceAmount = event.target;
+                let id = reduceAmount.dataset.id;
+                let tempItem = cart.find(item => item.id === id);
+                tempItem.amount = tempItem.amount - 1;
+                if (tempItem.amount > 0) {
+                    Storage.saveCart(cart);
+                    this.setCartValues(cart);
+                    reduceAmount.previousElementSibling.innerText = tempItem.amount;
+                } else {
+                    cartContent.removeChild(reduceAmount.parentElement.parentElement);
+                    this.removeItem(id)
+                }
+            }
         })
     }
 
@@ -155,6 +185,8 @@ class UI {
         while(cartContent.children.length > 0) {
             cartContent.removeChild(cartContent.children[0])
         }
+
+        this.hideCart();
     }
 
     removeItem(id) {
